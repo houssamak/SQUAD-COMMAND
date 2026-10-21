@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c1720">
+  <title>SQUAD COMMAND — Tactical Steering</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="levels.css">
+  <script src="libraries/p5.min.js"></script>
+  <script src="behaviors/vehicle.js"></script>
+  <script src="behaviors/arrival-vehicle.js"></script>
+  <script src="behaviors/vehicle-avec-radar.js"></script>
+  <script src="src/game/levels.js"></script>
+  <script src="src/game/obstacle-contact.js"></script>
+  <script src="src/entities/obstacle.js"></script>
+  <script src="src/entities/recruit.js"></script>
+  <script src="src/entities/world-cache.js"></script>
+  <script src="src/entities/hospital.js"></script>
+  <script src="src/entities/gold-coin.js"></script>
+  <script src="src/entities/enemy.js"></script>
+  <script src="src/entities/boss-enemy.js"></script>
+  <script src="src/entities/home.js"></script>
+  <script src="src/entities/squad-agent.js"></script>
+  <script src="src/entities/commander.js"></script>
+  <script src="src/entities/soldier.js"></script>
+  <script src="src/game/game.js"></script>
+  <script src="src/audio/audio-manager.js"></script>
+  <script src="src/ui/command-controller.js"></script>
+  <script src="src/main.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="SQUAD COMMAND accueil">
+      <span class="brand-mark" aria-hidden="true">SC</span>
+      <span><strong>SQUAD COMMAND</strong><small>TACTICAL STEERING SIMULATION</small></span>
+    </a>
+    <div class="mission-state"><span class="live-dot"></span><span id="missionState">PRÊT AU DÉPLOIEMENT</span></div>
+    <button class="icon-button" id="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel">☷ <span>Réglages</span></button>
+  </header>
+  <main class="layout">
+    <section class="battlefield" id="battlefield" aria-label="Champ de bataille tactique">
+      <div id="canvasHost"></div>
+      <div class="start-overlay" id="startOverlay">
+        <div class="start-card"><div class="title-topline"><span class="eyebrow">SÉRIE TACTIQUE · 01</span><span class="mission-code">OPÉRATION / NUIT BLANCHE</span></div><h1>SQUAD<br><em>COMMAND</em></h1><p class="hero-lead">La base tient si votre escouade tient.</p><p class="hero-copy">Recrutez, assignez vos équipes et reprenez le terrain. Chaque unité compte.</p><div class="map-picker" aria-label="Choisir une carte"><span class="eyebrow">CHOISIR UN THÉÂTRE</span><div class="map-options"><button type="button" class="map-choice active" data-level="forest"><i class="map-swatch forest-swatch"></i><span>Forêt boréale</span><small>SYLVE · 04</small></button><button type="button" class="map-choice" data-level="interior"><i class="map-swatch interior-swatch"></i><span>Laboratoire</span><small>SECTEUR · 02</small></button><button type="button" class="map-choice" data-level="outpost"><i class="map-swatch outpost-swatch"></i><span>Avant-poste</span><small>FRONT · 07</small></button><button type="button" class="map-choice" data-level="arena"><i class="map-swatch arena-swatch"></i><span>Arène tactique</span><small>ZONE · 09</small></button></div></div><button id="startButton" class="start-button" type="button"><span class="play-icon">▶</span><span>PLAY <small>LANCER L’OPÉRATION</small></span><b>↗</b></button><div class="hero-footer"><span>STEERING TACTIQUE</span><span>LOCAL · HORS LIGNE</span></div></div>
+      </div>
+      <div class="hud">
+        <div class="stat"><span>ESCOUADE</span><strong><b id="hudSquad">0</b><small> / 6</small></strong></div>
+        <div class="stat"><span>HOSTILES</span><strong id="hudHostiles">0</strong></div>
+        <div class="stat"><span>VAGUE</span><strong id="hudWave">—</strong></div>
+        <div class="stat level-stat"><span>NIVEAU</span><strong id="hudLevel">1</strong></div>
+        <div class="stat home-stat"><span>BASE</span><strong id="hudHome">100%</strong></div>
+        <div class="stat map-stat"><span>SECTEUR</span><strong id="hudMap">Forêt boréale</strong></div>
+        <div class="stat hospital-stat"><span>INFIRMERIE · H</span><strong id="hudHospital">DISPONIBLE</strong><div class="notification-stack" id="notificationStack" aria-live="polite" aria-relevant="additions text" aria-label="Notifications de mission"></div></div>
+      </div>
+      <div class="level-progress" aria-live="polite">
+        <div><strong id="levelProgressTitle">LEVEL 1 · VAGUE 0/2</strong><span id="levelProgressCount">0 HOSTILE</span></div>
+        <div class="level-progress-track"><i id="levelProgressFill"></i></div>
+      </div>
+      <div class="boss-health-panel" id="bossHealthPanel" hidden aria-live="polite">
+        <div><strong>COLOSSUS</strong><span id="bossHealthText">—</span></div>
+        <div class="boss-health-track"><i id="bossHealthFill"></i></div>
+      </div>
+      <div class="loadout-strip" aria-live="polite">
+        <span><small>ARME / OUTIL</small><strong id="hudWeapon">HACHE · E FOUILLER</strong></span>
+        <span class="gold-count"><small>OR</small><strong id="hudGold">0</strong></span>
+      </div>
+      <div class="battle-actions">
+        <button id="panelToggleButton" class="action-button" type="button" aria-expanded="true" aria-controls="sidePanel" aria-label="Masquer le panneau de configuration" title="Masquer le panneau">▤</button>
+        <button id="fullscreenButton" class="action-button" type="button" aria-pressed="false" aria-label="Passer en plein écran" title="Plein écran">⛶</button>
+        <button id="pauseButton" class="action-button" type="button" aria-label="Mettre en pause">Ⅱ</button>
+        <button id="restartButton" class="action-button" type="button" aria-label="Recommencer">↻</button>
+      </div>
+      <div class="command-hint"><kbd>Clic</kbd> Déplacer <kbd>F</kbd> Fuir <kbd>T</kbd> Tirer (fusil) <kbd>E</kbd> Fouiller <kbd>D + clic ennemi</kbd> Envoyer un soldat <kbd>P</kbd> Disperser & chasser <kbd>R</kbd> Regrouper</div>
+    </section>
+    <aside class="side-panel" id="sidePanel">
+      <section class="panel-section objective">
+        <div class="section-heading"><span class="eyebrow">MISSION ACTIVE</span><span class="mission-icon">✦</span></div>
+        <h1>Protégez le<br>relais tactique.</h1>
+        <p>Recrutez trois soldats, défendez HOME et traversez cinq niveaux de combat. La mission échoue si la base est détruite.</p>
+        <div class="progress-track"><span id="recruitProgress"></span></div>
+        <div class="progress-label"><span>RECRUTEMENT</span><strong id="recruitCount">0 / 3</strong></div>
+      </section>
+      <section class="panel-section order-panel">
+        <div class="section-heading"><span class="eyebrow">COMMANDES RAPIDES</span></div>
+        <button id="engageButton" class="primary-button" type="button"><span class="button-key">T</span><span><strong>Engager la cible</strong><small>Les soldats sélectionnés avancent et tirent</small></span><span class="button-arrow">↗</span></button>
+        <div class="quick-grid">
+          <button id="disperseButton" type="button"><kbd>P</kbd><span>Disperser & chasser</span></button>
+          <button id="regroupButton" type="button"><kbd>R</kbd><span>Regrouper</span></button>
+        </div>
+        <div class="mode-note" id="modeNote"><span class="mode-dot"></span>Mode formation · D maintenu pour commander</div>
+      </section>
+      <section class="panel-section roster-panel">
+        <div class="section-heading"><span class="eyebrow">UNITÉS DÉPLOYÉES</span><span class="roster-count" id="rosterCount">01</span></div>
+        <div class="unit-row commander-row"><span class="unit-avatar commander-avatar">C</span><span><strong>Commandant</strong><small>Vous · clic pour déplacer</small></span><span class="unit-status">ACTIF</span></div>
+        <div id="rosterList"></div>
+      </section>
+      <section class="panel-section footer-tools">
+        <button id="helpToggle" class="text-button" type="button">Voir toutes les commandes <span>↗</span></button>
+        <div id="helpPanel" class="help-panel" hidden>
+          <p><kbd>Clic gauche</kbd> Destination du commandant</p>
+          <p><kbd>Clic gauche</kbd> Sélectionner une unité</p>
+          <p><kbd>D + clic soldat</kbd> Sélectionner et lui assigner une attaque · répéter pour plusieurs soldats</p>
+          <p><kbd>Clic hostile</kbd> Sélectionner une cible de tir</p>
+          <p><kbd>D + clic ennemi</kbd> Envoie un soldat en formation à chaque clic. Répétez pour en envoyer d'autres; les missions déjà données restent intactes.</p>
+          <p><kbd>D + clic soldat</kbd> Ajoute ce soldat à la sélection et le lance contre une cible.</p>
+          <p><kbd>T</kbd> Le commandant tire au fusil après l’avoir trouvé. Avant cela, il ne tire pas; les fusiliers sélectionnés gardent leurs propres tirs.</p>
+          <p><kbd>H</kbd> Une seule fois par partie, soignez le commandant et les alliés proches dans la zone de l’hôpital. Le kit médical du laboratoire élargit le rayon. L’indicateur INFIRMERIE montre si le soin reste disponible.</p>
+          <p><kbd>E</kbd> La hache sert uniquement à fouiller au point scintillant. Forêt: fusil. Laboratoire: kit qui agrandit la zone de soin. Avant-poste: blindage. Arène: cellule qui renforce les trois prochains tirs du fusil.</p>
+          <p><kbd>F</kbd> Fuite du commandant et des soldats sélectionnés, jusqu’à la sécurité ou un nouvel ordre · <kbd>P</kbd> disperse les soldats et lance leur recherche automatique d’ennemis · <kbd>R</kbd> regroupement</p>
+          <p><kbd>Niveaux</kbd> Cinq niveaux de deux vagues, avec plus d’hostiles et des ennemis plus résistants. Dès le niveau 3, le Colosse annonce son onde de choc avec un cercle rouge et sa charge avec une ligne rouge; sortez de la zone avant l’impact. Sa barre de vie est affichée pendant le combat.</p>
+          <p><kbd>Or</kbd> Les pièces proches sont aspirées automatiquement par le joueur; chaque pièce ne compte qu’une fois.</p>
+          <p><kbd>Panneau</kbd> Le bouton ▤ replie la colonne de droite; le bouton ⛶ agrandit la carte. En plein écran, Échap ou × permet de revenir.</p>
+          <p><kbd>Échap</kbd> Pause / reprendre · <kbd>Réglages</kbd> carte et diagnostic</p>
+        </div>
+      </section>
+    </aside>
+  </main>
+  <aside class="settings-panel" id="settingsPanel" hidden aria-label="Réglages de mission">
+    <div class="settings-head"><div><span class="eyebrow">CONFIGURATION</span><h2>Réglages</h2></div><button id="settingsClose" class="close-button" type="button" aria-label="Fermer">×</button></div>
+          <label for="mapSelect">Environnement</label>
+    <select id="mapSelect"><option value="forest" selected>Forêt boréale</option><option value="interior">Laboratoire intérieur</option><option value="outpost">Zone militaire</option><option value="arena">Arène tactique</option></select>
+    <label for="controlMode">Contrôle du commandant</label>
+    <select id="controlMode"><option value="follow">Suivi de la souris</option><option value="click">Clic pour déplacer</option></select>
+    <div class="audio-settings" aria-label="Réglages audio">
+      <div class="audio-heading"><span>AMBIANCE SONORE</span><small>Le son démarre après votre première interaction</small></div>
+      <button class="secondary-button audio-toggle" id="musicToggle" type="button" aria-pressed="true">♫ Musique · activée</button>
+      <label class="audio-slider" for="musicVolume">Volume musique <output id="musicVolumeOut">16%</output></label>
+      <input id="musicVolume" type="range" min="0" max="100" value="16">
+      <button class="secondary-button audio-toggle" id="effectsToggle" type="button" aria-pressed="true">◖ Effets · activés</button>
+      <label class="audio-slider" for="effectsVolume">Volume effets <output id="effectsVolumeOut">48%</output></label>
+      <input id="effectsVolume" type="range" min="0" max="100" value="48">
+      <p class="setting-note">Musique héroïque synthétisée en boucle. Les tirs, le Colosse et les soins ont leurs propres effets.</p>
+    </div>
+    <button class="debug-toggle" id="debugToggle" type="button" aria-pressed="false">ACTIVER LE MODE DEBUG</button>
+    <p class="setting-note">Affiche positions, destinations, rayons, obstacles et marges de collision, cibles, affectations et états de steering. Aucun effet sur la simulation.</p>
+    <button id="settingsRestart" class="secondary-button" type="button">Recommencer la mission</button>
+    <p class="setting-note">Souris et clavier · déplacement en steering · aucune donnée envoyée.</p>
+  </aside>
+</body>
+</html>

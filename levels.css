@@ -1,0 +1,59 @@
+.level-stat strong{color:#d6f2a7}
+.level-progress{position:absolute;z-index:2;top:108px;left:18px;width:min(310px,44%);padding:9px 11px;border:1px solid #d9e9d425;border-radius:10px;background:#09120fdb;backdrop-filter:blur(9px);pointer-events:none}
+.level-progress>div:first-child,.boss-health-panel>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.level-progress strong{color:#d7efbf;font:700 8px "DM Mono",monospace;letter-spacing:.1em}
+.level-progress span{color:#a6b9a8;font:8px "DM Mono",monospace}
+.level-progress-track,.boss-health-track{height:5px;margin-top:7px;overflow:hidden;border-radius:99px;background:#ffffff1a}
+.level-progress-track i,.boss-health-track i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#80d8b4,#c4ec8e);box-shadow:0 0 11px #9ce6af88;transition:width .2s}
+.boss-health-panel{position:absolute;z-index:2;top:139px;left:18px;width:min(310px,44%);padding:9px 11px;border:1px solid #ff936858;border-radius:10px;background:#1c1114e8;backdrop-filter:blur(9px);pointer-events:none}
+.boss-health-panel[hidden]{display:none}
+.boss-health-panel strong{color:#ffad82;font:800 9px "DM Mono",monospace;letter-spacing:.13em}
+.boss-health-panel span{color:#ffe4cc;font:9px "DM Mono",monospace}
+.boss-health-track i{background:linear-gradient(90deg,#ff694f,#ffd278);box-shadow:0 0 12px #ff765f88}
+@media(max-width:700px){.level-progress{top:108px;left:8px;width:min(280px,calc(100% - 16px));padding:7px 9px}.boss-health-panel{top:154px;left:8px;width:min(280px,calc(100% - 16px));padding:7px 9px}.level-stat{display:none}}
+
+/* Mission notices stay beside the infirmary status within the battlefield HUD. */
+.topbar{position:relative;height:108px;align-items:flex-start;padding-top:14px}
+.topbar{z-index:3}
+.layout{height:calc(100vh - 108px)}
+.hospital-stat{position:relative;z-index:5}
+.notification-stack{position:absolute;z-index:6;left:calc(100% + 8px);right:auto;top:calc(100% + 7px);display:flex;flex-direction:column;justify-content:flex-start;gap:5px;width:clamp(145px,calc(100vw - 660px),320px);min-height:0;pointer-events:none}
+.notification-card{flex:none;width:100%;max-width:none;min-height:34px;padding:8px 11px;border:1px solid #9ad8ab35;border-radius:9px;background:linear-gradient(110deg,#14251deF,#101b17f2);box-shadow:0 6px 18px #0004;color:#dff2dc;font-size:10px;line-height:16px;text-align:center;transition:opacity .4s ease;overflow-wrap:anywhere;white-space:normal}
+.notification-card.notification-fading{opacity:0}
+.audio-settings{margin:17px 0;padding:12px;border:1px solid #d6e9d51b;border-radius:10px;background:#ffffff05}
+.audio-heading span,.audio-heading small{display:block}
+.audio-heading span{color:#d1e8d2;font:9px "DM Mono",monospace;letter-spacing:.12em}
+.audio-heading small{margin-top:4px;color:#91a497;font-size:9px;line-height:1.5}
+.settings-panel .audio-toggle{margin-top:10px;text-align:left}
+.settings-panel{max-height:calc(100vh - 90px);overflow:auto}
+.settings-panel .audio-slider{display:flex;justify-content:space-between;gap:8px;margin:10px 0 3px;color:#bac9bd;font-size:9px}
+.audio-slider output{color:#c2edc3;font-weight:700;font-variant-numeric:tabular-nums}
+.settings-panel input[type="range"]{width:100%;height:16px;margin:0 0 4px;accent-color:#a5e4b4}
+.audio-settings .setting-note{margin:8px 0 0}
+.layout.panel-hidden{grid-template-columns:minmax(0,1fr)}
+.layout.panel-hidden .battlefield{height:100%;min-height:0}
+.side-panel[hidden]{display:none}
+.action-button{min-width:34px;width:auto;padding:0 8px;font-size:15px}
+.hud{max-width:calc(100% - 180px)}
+
+html:fullscreen{background:#08100c}
+html:fullscreen .topbar{height:58px;padding:0;display:block;background:#08100ceF}
+html:fullscreen .topbar .brand,html:fullscreen .mission-state,html:fullscreen #settingsToggle{display:none}
+html:fullscreen .layout{width:100vw;height:calc(100vh - 58px);max-width:none;grid-template-columns:minmax(0,1fr);gap:0;padding:0;margin:0}
+html:fullscreen .side-panel{display:none}
+html:fullscreen #panelToggleButton{display:none}
+html:fullscreen .battlefield{height:100%;min-height:0;border:0;border-radius:0}
+html:fullscreen .hud{max-width:calc(100% - 200px)}
+
+@media(max-width:950px){.layout{min-height:calc(100vh - 108px)}.layout.panel-hidden{height:calc(100vh - 108px)}}
+@media(max-width:700px){
+  .topbar{height:98px;padding:10px 12px 0}
+  .layout{height:calc(100vh - 98px);min-height:0}
+  .layout.panel-hidden .battlefield{height:100%;min-height:0}
+  .notification-stack{width:max(70px,calc(100vw - 684px));gap:4px}
+  .notification-card{min-height:31px;padding:5px 7px;font-size:9px}
+  .hud{max-width:calc(100% - 166px)}
+}
+@media(max-width:950px) and (min-width:701px){.layout{height:auto;min-height:calc(100vh - 108px)}}
+@media(min-width:701px) and (max-width:950px){.notification-stack{width:max(74px,calc(100vw - 684px))}}
+@media(max-height:620px) and (min-width:701px){.topbar{height:94px}.layout{height:calc(100vh - 94px)}}
